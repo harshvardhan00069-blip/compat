@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Synergy | Compatibility Engine</title>
+    <style>
+        :root {
+            --bg: #0f0c29;
+            --gradient: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+            --gold: #ffd700;
+            --purple: #b983ff;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; font-family: 'Cinzel', serif; } /* Cinzel is a classy mystic font */
+        
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--gradient);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Stars Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px; 
+            animation: starMove 100s linear infinite;
+            z-index: 0;
+        }
+        @keyframes starMove { from { transform: translateY(0); } to { transform: translateY(-550px); } }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--gold);
+        }
+
+        /* Form Styling */
+        .couple-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--purple);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--purple);
+            padding: 12px;
+            color: white;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            box-shadow: 0 0 15px var(--purple);
+            border-color: white;
+        }
+
+        .btn-calc {
+            background: linear-gradient(45deg, #FFD700, #DAA520);
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            color: #0f0c29;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-calc:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #FFD700;
+        }
+
+        /* Loading Animation */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .orb {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--purple), #000);
+            box-shadow: 0 0 30px var(--purple);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.2); opacity: 1; } }
+
+        /* Results Section */
+        .result-card {
+            display: none;
+            text-align: center;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            position: relative;
+        }
+
+        .verdict {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple);
+            font-style: italic;
+        }
+
+        .breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat-bar {
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .stat-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 0%; /* Animated later */
+            transition: width 1.5s ease-out;
+        }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <div class="container">
+        <div id="inputPhase">
+            <h1>Celestial Match</h1>
+            <div class="couple-form">
+                <div class="input-group">
+                    <label>YOUR NAME</label>
+                    <input type="text" id="name1" placeholder="e.g. Aryan">
+                </div>
+                <div class="input-group">
+                    <label>YOUR BIRTH DATE</label>
+                    <input type="date" id="dob1">
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); width: 100%;">
+
+                <div class="input-group">
+                    <label>PARTNER'S NAME</label>
+                    <input type="text" id="name2" placeholder="e.g. Shambhavi">
+                </div>
+                <div class="input-group">
+                    <label>PARTNER'S BIRTH DATE</label>
+                    <input type="date" id="dob2">
+                </div>
+
+                <button class="btn-calc" onclick="calculateCompatibility()">Align The Stars</button>
+            </div>
+        </div>
+
+        <div id="loadingPhase" class="loader">
+            <div class="orb"></div>
+            <p style="letter-spacing: 2px;">Consulting the Cosmos...</p>
+        </div>
+
+        <div id="resultPhase" class="result-card">
+            <h1>Soul Synergy</h1>
+            
+            <div class="score-circle">
+                <span id="finalScore">0%</span>
+            </div>
+
+            <div class="verdict" id="verdictText">
+                "A match written in the stars."
+            </div>
+
+            <div style="margin-bottom: 20px; font-size: 0.9rem;">
+                <span id="sign1" style="color: var(--purple)">Leo</span> 
+                <span> + </span>
+                <span id="sign2" style="color: var(--purple)">Aries</span>
+            </div>
+
+            <div class="breakdown">
+                <div>
+                    <span style="font-size:0.8rem">Emotional</span>
+                    <div class="stat-bar"><div class="stat-fill" id="bar1"></div></div>
+                </div>
+                <div>
+                    <span style="font-size:0.8rem">Intellectual</span>
+                    <div class="stat-bar"><div class="stat-fill" id="bar2"></div></div>
+                </div>
+                <div>
+                    <span style="font-size:0.8rem">Physical</span>
+                    <div class="stat-bar"><div class="stat-fill" id="bar3"></div></div>
+                </div>
+                <div>
+                    <span style="font-size:0.8rem">Longevity</span>
+                    <div class="stat-bar"><div class="stat-fill" id="bar4"></div></div>
+                </div>
+            </div>
+
+            <button class="btn-calc" style="padding: 10px; font-size: 0.9rem; margin-top: 20px; background: transparent; border: 1px solid var(--gold); color: var(--gold);" onclick="location.reload()">Check Another</button>
+        </div>
+    </div>
+
+    <script>
+        // Zodiac Data
+        const zodiacSigns = [
+            { name: "Capricorn", element: "Earth", start: [12, 22], end: [1, 19] },
+            { name: "Aquarius", element: "Air", start: [1, 20], end: [2, 18] },
+            { name: "Pisces", element: "Water", start: [2, 19], end: [3, 20] },
+            { name: "Aries", element: "Fire", start: [3, 21], end: [4, 19] },
+            { name: "Taurus", element: "Earth", start: [4, 20], end: [5, 20] },
+            { name: "Gemini", element: "Air", start: [5, 21], end: [6, 20] },
+            { name: "Cancer", element: "Water", start: [6, 21], end: [7, 22] },
+            { name: "Leo", element: "Fire", start: [7, 23], end: [8, 22] },
+            { name: "Virgo", element: "Earth", start: [8, 23], end: [9, 22] },
+            { name: "Libra", element: "Air", start: [9, 23], end: [10, 22] },
+            { name: "Scorpio", element: "Water", start: [10, 23], end: [11, 21] },
+            { name: "Sagittarius", element: "Fire", start: [11, 22], end: [12, 21] }
+        ];
+
+        // Element Compatibility Matrix
+        const elementMatrix = {
+            "Fire": { "Fire": 90, "Air": 95, "Earth": 50, "Water": 40 },
+            "Air": { "Fire": 95, "Air": 90, "Earth": 60, "Water": 50 },
+            "Earth": { "Fire": 50, "Air": 60, "Earth": 90, "Water": 95 },
+            "Water": { "Fire": 40, "Air": 50, "Earth": 95, "Water": 90 }
+        };
+
+        function getZodiac(dateStr) {
+            const date = new Date(dateStr);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            // Find sign (Simple logic)
+            // If month matches start month and day >= start day -> Sign
+            // Or month matches end month and day <= end day -> Sign
+            // Else loop
+            
+            // Simplified lookup for demo
+            if((month == 1 && day <= 19) || (month == 12 && day >=22)) return zodiacSigns[0];
+            if((month == 1 && day >= 20) || (month == 2 && day <=18)) return zodiacSigns[1];
+            if((month == 2 && day >= 19) || (month == 3 && day <=20)) return zodiacSigns[2];
+            if((month == 3 && day >= 21) || (month == 4 && day <=19)) return zodiacSigns[3];
+            if((month == 4 && day >= 20) || (month == 5 && day <=20)) return zodiacSigns[4];
+            if((month == 5 && day >= 21) || (month == 6 && day <=20)) return zodiacSigns[5];
+            if((month == 6 && day >= 21) || (month == 7 && day <=22)) return zodiacSigns[6];
+            if((month == 7 && day >= 23) || (month == 8 && day <=22)) return zodiacSigns[7];
+            if((month == 8 && day >= 23) || (month == 9 && day <=22)) return zodiacSigns[8];
+            if((month == 9 && day >= 23) || (month == 10 && day <=22)) return zodiacSigns[9];
+            if((month == 10 && day >= 23) || (month == 11 && day <=21)) return zodiacSigns[10];
+            if((month == 11 && day >= 22) || (month == 12 && day <=21)) return zodiacSigns[11];
+            
+            return zodiacSigns[0]; // Fallback
+        }
+
+        function calculateCompatibility() {
+            const n1 = document.getElementById('name1').value;
+            const d1 = document.getElementById('dob1').value;
+            const n2 = document.getElementById('name2').value;
+            const d2 = document.getElementById('dob2').value;
+
+            if(!n1 || !d1 || !n2 || !d2) return alert("Please fill in all celestial coordinates (fields).");
+
+            // 1. UI Transition
+            document.getElementById('inputPhase').style.display = 'none';
+            document.getElementById('loadingPhase').style.display = 'block';
+
+            // 2. Logic
+            const z1 = getZodiac(d1);
+            const z2 = getZodiac(d2);
+
+            // Base score from Zodiac Elements
+            let score = elementMatrix[z1.element][z2.element];
+
+            // Numerology Bonus (Life Path)
+            // (Simple sum of letters for demo variance)
+            const nameScore = (n1.length + n2.length) % 10;
+            score += nameScore; 
+            if(score > 100) score = 100;
+            if(score < 60) score = 65; // Keeping it positive!
+
+            // Generate Breakdown Stats (randomized around the main score)
+            const stats = [
+                Math.min(100, score + Math.floor(Math.random() * 10)),
+                Math.min(100, score - Math.floor(Math.random() * 15)),
+                Math.min(100, score + Math.floor(Math.random() * 5)),
+                Math.min(100, score - Math.floor(Math.random() * 5))
+            ];
+
+            // Verdict Text
+            let verdict = "";
+            if(score > 90) verdict = "A Legendary Union of Souls.";
+            else if(score > 80) verdict = "A Harmonious and Powerful Bond.";
+            else if(score > 70) verdict = "A Beautiful Journey of Growth.";
+            else verdict = "Opposites Attract with Intensity.";
+
+            // 3. Reveal (after delay)
+            setTimeout(() => {
+                document.getElementById('loadingPhase').style.display = 'none';
+                document.getElementById('resultPhase').style.display = 'block';
+
+                // Animate Numbers
+                let current = 0;
+                const timer = setInterval(() => {
+                    current++;
+                    document.getElementById('finalScore').innerText = current + "%";
+                    if(current >= score) clearInterval(timer);
+                }, 20);
+
+                // Set Text
+                document.getElementById('verdictText').innerText = `"${verdict}"`;
+                document.getElementById('sign1').innerText = `${z1.name} (${z1.element})`;
+                document.getElementById('sign2').innerText = `${z2.name} (${z2.element})`;
+
+                // Animate Bars
+                setTimeout(() => {
+                    document.getElementById('bar1').style.width = stats[0] + "%";
+                    document.getElementById('bar2').style.width = stats[1] + "%";
+                    document.getElementById('bar3').style.width = stats[2] + "%";
+                    document.getElementById('bar4').style.width = stats[3] + "%";
+                }, 500);
+
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
